@@ -16,7 +16,7 @@ public class Movement : MonoBehaviour
     Vector3 hitPoint;
 
     // 이동 속도
-    float moveSpeed = 10.0f;
+    [SerializeField] float moveSpeed = 10.0f;
 
     void Start()
     {
