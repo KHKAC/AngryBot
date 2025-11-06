@@ -64,7 +64,7 @@ public class PhotonManager : MonoBehaviourPunCallbacks
 
         foreach (var player in PhotonNetwork.CurrentRoom.Players)
         {
-            Debug.Log($"{player.Value.NickName} , {player.Value.ActorNumber}");
+            Debug.Log($"{player.Value.NickName} , {player.Value.ActorNumber}"); 
         }
     }
 }
