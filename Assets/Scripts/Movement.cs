@@ -5,7 +5,7 @@ using Photon.Pun;
 using Photon.Realtime;
 using Cinemachine;
 
-public class Movement : MonoBehaviour
+public class Movement : MonoBehaviourPunCallbacks, IPunObservable
 {
     // 컴포넌트 캐시처리를 위한 변수
     CharacterController controller;
@@ -22,6 +22,10 @@ public class Movement : MonoBehaviour
 
     // 이동 속도
     [SerializeField] float moveSpeed = 10.0f;
+
+    Vector3 receivePos;
+    Quaternion receiveRot;
+    public float damping;
 
     void Start()
     {
@@ -44,10 +48,17 @@ public class Movement : MonoBehaviour
 
     void Update()
     {
-        if(pv.IsMine)
+        if (pv.IsMine)
         {
             Move();
             Turn();
+        }
+        else
+        {
+            // 수신된 좌표로 보간한 이동 처리
+            transform.position = Vector3.Lerp(transform.position, receivePos, Time.deltaTime * damping);
+            // 수신된 회전값으로 보간한 회전 처리
+            transform.rotation = Quaternion.Slerp(transform.rotation, receiveRot, Time.deltaTime * damping);
         }
     }
 
@@ -95,5 +106,20 @@ public class Movement : MonoBehaviour
         lookDir.y = 0;
         // 주인공 캐릭터의 회전값 지정
         transform.localRotation = Quaternion.LookRotation(lookDir);
+    }
+
+    public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
+    {
+        // 자신이 로컬 캐릭터인 경우 자신의 데이터를 다른 네트워크에 송신
+        if (stream.IsWriting)
+        {
+            stream.SendNext(transform.position);
+            stream.SendNext(transform.rotation);
+        }
+        else
+        {
+            receivePos = (Vector3)stream.ReceiveNext();
+            receiveRot = (Quaternion)stream.ReceiveNext();
+        }
     }
 }
